@@ -7,9 +7,8 @@ from app.db.models.device import Device
 def insert_device(device: Device):
     with driver.session() as session:
         try:
-            print(device)
             query = """
-            CREATE (device:Device {
+            MERGE (device:Device {
                 id: $id, name: $name, brand: $brand, model: $model, os: $os, 
                 latitude: $latitude, longitude: $longitude, altitude_meters: $altitude_meters, accuracy_meters: $accuracy_meters})
             RETURN device.id
