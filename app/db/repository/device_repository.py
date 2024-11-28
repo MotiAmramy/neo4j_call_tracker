@@ -13,8 +13,6 @@ def insert_device(device: Device):
                 latitude: $latitude, longitude: $longitude, altitude_meters: $altitude_meters, accuracy_meters: $accuracy_meters})
             RETURN device.id
             """
-
-            # Corrected the usage of device.location
             params = {
                 "id": device.id,
                 "name": device.name,

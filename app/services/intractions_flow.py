@@ -6,6 +6,10 @@ from app.db.repository.device_repository import insert_device
 from app.db.repository.interaction_repository import create_interactions_connection
 
 
+def check_if_got_same_ids(data):
+    return data['devices'][0]['id'] == data['devices'][1]['id']
+
+
 def flow_of_insert_devices(data):
     devices_models = t.pipe(
          data,
@@ -16,14 +20,10 @@ def flow_of_insert_devices(data):
 
 
 
-def flow_of_connect_devices(data, devices_id):
-    from_device = devices_id[0].value_or(None)
-    to_device = devices_id[1].value_or(None)
-    print(from_device)
-    print(to_device)
+def flow_of_connect_devices(data):
     interaction_model = t.pipe(
         data,
-        lambda i: create_interactions_connection(from_device, to_device, Interaction(**i)),
+        lambda i: create_interactions_connection(Interaction(**i)),
         list
     )
     return interaction_model
