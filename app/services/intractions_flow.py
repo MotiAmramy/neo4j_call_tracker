@@ -1,5 +1,4 @@
 import toolz as t
-
 from app.db.models.device import Device
 from app.db.models.interaction import Interaction
 from app.db.repository.device_repository import insert_device
