@@ -12,4 +12,4 @@ class Interaction:
     signal_strength_dbm: int
     distance_meters: float
     duration_seconds: int
-    timestamp: datetime
+    timestamp: str
