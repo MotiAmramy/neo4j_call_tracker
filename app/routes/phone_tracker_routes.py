@@ -2,6 +2,7 @@ from flask import Blueprint
 
 from app.services.all_connection_by_device_id import count_connected_devices
 from app.services.bluetooth_path import find_bluetooth_connected_devices
+from app.services.dierct_connections import check_direct_connection
 from app.services.intractions_flow import flow_of_insert_devices, flow_of_connect_devices, check_if_got_same_ids
 from app.services.signle_strong_then_60 import get_strong_device_connections
 
@@ -70,3 +71,18 @@ def count_connected():
       return jsonify(data), 200
     except Exception as e:
         return jsonify({"error": "Database Error", "details": str(e)}), 500
+
+
+
+
+@phone_blueprint.route('/api/check_direct_connection', methods=['GET'])
+def check_connection():
+    try:
+        device_id_1 = request.args.get('device_id_1')
+        device_id_2 = request.args.get('device_id_2')
+        if not device_id_1 or not device_id_2:
+            return jsonify({"error": "Both device IDs are required"}), 400
+        data = check_direct_connection(device_id_1, device_id_2)
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": "Unexpected Error", "details": str(e)}), 500
