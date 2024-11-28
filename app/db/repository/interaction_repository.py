@@ -1,5 +1,4 @@
 from returns.result import Failure, Success
-
 from app.db.database import driver
 from app.db.models.interaction import Interaction
 
