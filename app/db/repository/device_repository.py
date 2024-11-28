@@ -33,3 +33,7 @@ def insert_device(device: Device):
         except Exception as e:
             print(str(e))
             return Failure(str(e))
+
+
+
+

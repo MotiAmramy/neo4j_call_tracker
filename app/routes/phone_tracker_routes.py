@@ -4,7 +4,7 @@ import toolz as t
 from app.db.models.device import Device
 from app.db.models.interaction import Interaction
 from app.db.repository.device_repository import insert_device
-from app.db.repository.interaction_repository import insert_interaction
+from app.services.intraction_service import flow_of_insert_devices, flow_of_connect_devices
 
 phone_blueprint = Blueprint("phone_tracker", __name__)
 
@@ -17,18 +17,8 @@ def get_interaction():
       data = request.json
       if not data:
          return jsonify({"error": "No data provided"}), 400
-
-      devices = data['devices']
-      interaction = data['interaction']
-      devices_models = t.pipe(
-         devices,
-         t.partial(map, lambda d: insert_device(Device(**d))),
-         list
-      )
-      interaction_model = t.pipe(
-         interaction,
-         lambda i: insert_interaction(Interaction(**i))
-      )
+      data_inserted_devices = flow_of_insert_devices(data['devices'])
+      flow_of_connect_devices(data_inserted_devices, data['interaction'])
       return jsonify({"message": "Devices and interaction processed successfully"}), 200
 
    except Exception as e:
@@ -38,6 +28,6 @@ def get_interaction():
 
 
 
-@phone_blueprint.route("/api/bluetooth_connection", methods=['GET'])
-def get_bluetooth_interaction():
-   try:
+# @phone_blueprint.route("/api/bluetooth_connection", methods=['GET'])
+# def get_bluetooth_interaction():
+#    try:

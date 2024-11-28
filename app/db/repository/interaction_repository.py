@@ -1,6 +1,4 @@
-from returns.result import Success, Failure
 from app.db.database import driver
-from app.db.models.interaction import Interaction
 
 
 
@@ -11,37 +9,35 @@ from app.db.models.interaction import Interaction
 
 
 
-
-
-
-
-def insert_interaction(interaction: Interaction):
+def create_interactions_connection(from_device_id, to_device_id, interaction):
     with driver.session() as session:
         try:
             query = """
-            CREATE (inter:Interaction {
-                from_device: $from_device, to_device: $to_device, method: $method, 
-                bluetooth_version: $bluetooth_version, signal_strength_dbm: $signal_strength_dbm, 
-                distance_meters: $distance_meters, duration_seconds: $duration_seconds, 
-                timestamp: $timestamp})
-            RETURN inter
+            MATCH (a:Device {id: $from_device_id}), (b:Device {id: $to_device_id})
+            CREATE (a)-[r:CONNECTED {
+                distance_meters: $distance_meters,
+                signal_strength_dbm: $signal_strength_dbm,
+                timestamp: $timestamp,
+                latitude: $latitude,
+                longitude: $longitude,
+                altitude_meters: $altitude_meters,
+                accuracy_meters: $accuracy_meters
+            }]->(b)
+            RETURN r
             """
-
-            # Convert timestamp to string if necessary (Neo4j typically stores date-time as strings or specific types)
             params = {
-                "from_device": interaction.from_device,
-                "to_device": interaction.to_device,
+                "from_device_id": from_device_id,
+                "to_device_id": to_device_id,
                 "method": interaction.method,
                 "bluetooth_version": interaction.bluetooth_version,
                 "signal_strength_dbm": interaction.signal_strength_dbm,
                 "distance_meters": interaction.distance_meters,
                 "duration_seconds": interaction.duration_seconds,
-                "timestamp": interaction.timestamp  # Convert timestamp to ISO string format
+                "timestamp": interaction.timestamp
             }
-
-            res = session.run(query, params).single()
-            return Success(res['inter'])  # Return the inserted Interaction node
-
+            result = session.run(query, params)
+            return result.single() is not None
         except Exception as e:
-            print(str(e))
-            return Failure(str(e))
+            print(f"Error creating connection: {str(e)}")
+            return False
+
