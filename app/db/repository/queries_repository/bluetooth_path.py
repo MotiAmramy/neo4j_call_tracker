@@ -6,15 +6,25 @@ def find_bluetooth_connected_devices():
         with driver.session() as session:
 
             query = """
-            MATCH path = (a:Device)-[r:CONNECTED*]->(b:Device)
-            WHERE ALL(rel IN relationships(path) WHERE rel.method = 'Bluetooth')
-            RETURN [node IN nodes(path) | {id: node.id, name: node.name, brand: node.brand, model: node.model, os: node.os}] AS devices,
-                   length(path) AS path_length
+            MATCH (start:Device) MATCH (end:Device)
+            WHERE start <> end
+            MATCH path = shortestPath((start)-[:CONNECTED*]->(end))
+            WHERE ALL(r IN relationships(path) WHERE r.method = 'Bluetooth')
+            WITH path, length(path) AS pathLength
+            ORDER BY pathLength DESC LIMIT 1 RETURN path
             """
-
-            return [
-                {"devices": record["devices"], "path_length": record["path_length"]}
-                for record in session.run(query)
+            result = session.run(query)
+            paths_data = [
+                {
+                    "devices": [
+                        {"id": node["id"], "name": node["name"], "brand": node["brand"], "model": node["model"], "os": node["os"]}
+                        for node in record["path"].nodes
+                    ],
+                    "path_length": len(record["path"].relationships)
+                }
+                for record in result
             ]
+            return paths_data
+
     except Exception as e:
         return {"error": "Database Error", "details": str(e)}
