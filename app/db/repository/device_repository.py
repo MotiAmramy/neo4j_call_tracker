@@ -26,7 +26,6 @@ def insert_device(device: Device):
             }
             res = session.run(query, params).single()
             return Success(res['device.id'])
-
         except Exception as e:
             print(str(e))
             return Failure(str(e))

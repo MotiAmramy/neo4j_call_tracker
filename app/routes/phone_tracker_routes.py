@@ -1,11 +1,10 @@
 from flask import Blueprint
-
 from app.db.repository.queries_repository.all_connection_by_device_id import count_connected_devices
 from app.db.repository.queries_repository.bluetooth_path import find_bluetooth_connected_devices
 from app.db.repository.queries_repository.dierct_connections import check_direct_connection
 from app.db.repository.queries_repository.recent_interaction_device import get_most_recent_interaction
 from app.db.repository.queries_repository.signle_strong_then_60 import get_strong_device_connections
-from app.services.intractions_flow import flow_of_insert_devices, flow_of_connect_devices, check_if_got_same_ids
+from app.services.intractions_flow import flow_of_connect_devices, check_if_got_same_ids
 from flask import jsonify, request
 
 
@@ -17,13 +16,13 @@ phone_blueprint = Blueprint("phone_tracker", __name__)
 def get_interaction():
    try:
       data = request.json
-
       if not data or check_if_got_same_ids(data):
          return jsonify({"error": "No correct data or no data provided"}), 400
-
-      flow_of_insert_devices(data['devices'])
-      flow_of_connect_devices(data['interaction'])
-      return jsonify({"message": "Devices and interaction processed successfully"}), 200
+      return (
+          flow_of_connect_devices(request.json)
+          .map(lambda u: (jsonify(u), 200))
+          .value_or((jsonify({}), 400))
+      )
 
    except Exception as e:
       print(str(e))
